@@ -1,107 +1,122 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>資格学習ポータル</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" />
+  <title>資格管理ツール</title>
   <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      margin: 0;
-      padding: 0;
-      background-color: #f4f4f4;
-    }
-
-    header {
-      background-color: #2c3e50;
-      color: white;
-      padding: 20px;
-      text-align: center;
-    }
-
-    main {
-      padding: 20px;
-      max-width: 900px;
-      margin: auto;
-    }
-
-    .card {
-      background: white;
-      border-radius: 6px;
-      padding: 20px;
-      margin-bottom: 20px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    .card h2 {
-      margin-top: 0;
-    }
-
-    a.button {
-      display: inline-block;
-      margin-top: 10px;
-      background-color: #3498db;
-      color: white;
-      padding: 10px 15px;
-      text-decoration: none;
-      border-radius: 4px;
-    }
-
-    a.button:hover {
-      background-color: #2980b9;
-    }
-
-    footer {
-      text-align: center;
-      padding: 20px;
-      color: #888;
-    }
-
-    @media screen and (max-width: 600px) {
-      body {
-        padding: 10px;
-      }
-    }
+    body { font-family: sans-serif; max-width: 900px; margin: 20px auto; background:#f9f9f9; padding: 10px; }
+    h1 { text-align: center; }
+    .section { background: white; padding: 15px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);}
+    label { display: block; margin-top: 10px; }
+    input[type="text"] { width: 100%; padding: 8px; margin-top: 5px; }
+    button { margin-top: 10px; padding: 8px 15px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; }
+    button:hover { background: #2980b9; }
+    ul { list-style-type: none; padding-left: 0; }
+    li { background: #eee; margin: 5px 0; padding: 8px; border-radius: 4px; }
+    .sub-list { margin-left: 20px; }
+    select, option { padding: 6px; margin-top: 5px; width: 100%; }
   </style>
 </head>
 <body>
 
-<header>
-  <h1>📘 資格学習ポータル</h1>
-  <p>自分のスキルを可視化し、効率よく学習しよう</p>
-</header>
+  <h1>資格管理ツール</h1>
 
-<main>
-
-  <div class="card">
-    <h2>📂 ITパスポート</h2>
-    <p>ITパスポートの基礎資料や練習問題です。</p>
-    <a class="button" href="https://drive.google.com/drive/folders/YOUR_FOLDER_ID" target="_blank">資料を開く</a>
+  <div class="section">
+    <h2>資格を追加</h2>
+    <label for="qualificationName">資格名：</label>
+    <input type="text" id="qualificationName" placeholder="例：ITパスポート" />
+    <button onclick="addQualification()">資格を追加</button>
   </div>
 
-  <div class="card">
-    <h2>📂 簿記3級</h2>
-    <p>簿記3級のスライド、Excel問題集、過去問リンクなどをまとめています。</p>
-    <a class="button" href="https://drive.google.com/drive/folders/YOUR_FOLDER_ID" target="_blank">資料を開く</a>
+  <div class="section">
+    <h2>サブ項目を追加</h2>
+    <label for="qualificationSelect">資格を選択：</label>
+    <select id="qualificationSelect">
+      <option value="" disabled selected>資格を選んでください</option>
+    </select>
+    <label for="subItemName">サブ項目名：</label>
+    <input type="text" id="subItemName" placeholder="例：模擬試験" />
+    <button onclick="addSubItem()">サブ項目を追加</button>
   </div>
 
-  <div class="card">
-    <h2>📝 学習記録フォーム</h2>
-    <p>毎日の学習内容を記録して、進捗を可視化しましょう。</p>
-    <a class="button" href="https://forms.gle/YOUR_FORM_ID" target="_blank">記録フォームへ</a>
+  <div class="section">
+    <h2>現在の資格一覧</h2>
+    <ul id="qualificationList">
+      <!-- 資格とサブ項目がここに表示される -->
+    </ul>
   </div>
 
-  <div class="card">
-    <h2>📊 進捗チェックリスト</h2>
-    <p>Googleスプレッドシートで進捗を管理できます。</p>
-    <a class="button" href="https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID" target="_blank">進捗表を見る</a>
-  </div>
+<script>
+  const qualifications = {};
 
-</main>
+  function addQualification() {
+    const nameInput = document.getElementById('qualificationName');
+    const name = nameInput.value.trim();
+    if (!name) {
+      alert('資格名を入力してください');
+      return;
+    }
+    if (qualifications[name]) {
+      alert('すでに同じ資格名があります');
+      return;
+    }
+    qualifications[name] = [];
+    updateQualificationSelect();
+    updateQualificationList();
+    nameInput.value = '';
+  }
 
-<footer>
-  &copy; 2025 資格学習ポータル - 作成者：あなたの名前
-</footer>
+  function addSubItem() {
+    const select = document.getElementById('qualificationSelect');
+    const subInput = document.getElementById('subItemName');
+    const selectedQualification = select.value;
+    const subName = subInput.value.trim();
+    if (!selectedQualification) {
+      alert('資格を選択してください');
+      return;
+    }
+    if (!subName) {
+      alert('サブ項目名を入力してください');
+      return;
+    }
+    qualifications[selectedQualification].push(subName);
+    updateQualificationList();
+    subInput.value = '';
+  }
+
+  function updateQualificationSelect() {
+    const select = document.getElementById('qualificationSelect');
+    select.innerHTML = '<option value="" disabled selected>資格を選んでください</option>';
+    Object.keys(qualifications).forEach(name => {
+      const option = document.createElement('option');
+      option.value = name;
+      option.textContent = name;
+      select.appendChild(option);
+    });
+  }
+
+  function updateQualificationList() {
+    const ul = document.getElementById('qualificationList');
+    ul.innerHTML = '';
+    Object.entries(qualifications).forEach(([qual, subs]) => {
+      const li = document.createElement('li');
+      li.textContent = qual;
+
+      if(subs.length > 0){
+        const subUl = document.createElement('ul');
+        subUl.classList.add('sub-list');
+        subs.forEach(sub => {
+          const subLi = document.createElement('li');
+          subLi.textContent = sub;
+          subUl.appendChild(subLi);
+        });
+        li.appendChild(subUl);
+      }
+
+      ul.appendChild(li);
+    });
+  }
+</script>
 
 </body>
 </html>
