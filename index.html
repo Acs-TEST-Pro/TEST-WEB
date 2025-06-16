@@ -2,40 +2,120 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <title>Firebase Firestore サンプル</title>
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+  <title>Firebase資格管理ツール</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body {
+      font-family: sans-serif;
+      max-width: 800px;
+      margin: 30px auto;
+      background-color: #f9f9f9;
+      padding: 20px;
+    }
+    h1 { text-align: center; }
+    .section {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+    }
+    label, input, select, button {
+      display: block;
+      width: 100%;
+      margin-top: 10px;
+    }
+    input, select {
+      padding: 8px;
+      margin-bottom: 10px;
+    }
+    button {
+      padding: 10px;
+      background: #3498db;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover { background: #2980b9; }
+    ul { list-style: none; padding-left: 0; }
+    li { background: #eee; margin: 5px 0; padding: 8px; border-radius: 4px; }
+  </style>
 </head>
 <body>
-  <h1>Firestoreにデータを書き込む例</h1>
-  <button onclick="addQualification()">資格を追加</button>
 
-  <script>
-    // 1. Firebase初期化設定（あなたの設定に置き換えてください）
+  <h1>🎓 Firebase 資格学習管理</h1>
+
+  <div class="section">
+    <h2>資格の追加</h2>
+    <label for="qualificationName">資格名</label>
+    <input type="text" id="qualificationName" placeholder="例：ITパスポート" />
+    <button id="addQualification">Firebaseに追加</button>
+  </div>
+
+  <div class="section">
+    <h2>登録済み資格一覧（Firestoreから読み込み）</h2>
+    <ul id="qualificationList"></ul>
+  </div>
+
+  <!-- Firebase SDK + モジュール -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-analytics.js";
+    import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
+
+    // あなたのFirebaseプロジェクトの設定
     const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_PROJECT_ID.appspot.com",
-      messagingSenderId: "SENDER_ID",
-      appId: "APP_ID"
+      apiKey: "AIzaSyC3HefcrtoDdFUWfNjXXypPlbIG3lx2b50",
+      authDomain: "test-6ecfb.firebaseapp.com",
+      projectId: "test-6ecfb",
+      storageBucket: "test-6ecfb.firebasestorage.app",
+      messagingSenderId: "1027162329344",
+      appId: "1:1027162329344:web:b1ebb77a93c37e3369e3e5",
+      measurementId: "G-8B2N79Y35Q"
     };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
 
-    // 2. Firestoreに資格を追加する関数
-    function addQualification() {
-      const qualificationName = prompt("追加する資格名を入力してください");
-      if (!qualificationName) return alert("資格名が必要です");
-      db.collection("qualifications").add({
-        name: qualificationName,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-      }).then(() => {
-        alert("資格を追加しました！");
-      }).catch(error => {
-        alert("エラー: " + error.message);
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const db = getFirestore(app);
+
+    // 資格の追加
+    document.getElementById("addQualification").addEventListener("click", async () => {
+      const name = document.getElementById("qualificationName").value.trim();
+      if (!name) {
+        alert("資格名を入力してください");
+        return;
+      }
+
+      try {
+        await addDoc(collection(db, "qualifications"), {
+          name: name,
+          createdAt: new Date()
+        });
+        alert("資格を追加しました");
+        document.getElementById("qualificationName").value = "";
+        loadQualifications();
+      } catch (e) {
+        alert("エラー：" + e.message);
+      }
+    });
+
+    // 資格一覧の読み込み
+    async function loadQualifications() {
+      const list = document.getElementById("qualificationList");
+      list.innerHTML = "";
+
+      const querySnapshot = await getDocs(collection(db, "qualifications"));
+      querySnapshot.forEach((doc) => {
+        const li = document.createElement("li");
+        li.textContent = doc.data().name;
+        list.appendChild(li);
       });
     }
+
+    // 初回読み込み
+    loadQualifications();
   </script>
+
 </body>
 </html>
