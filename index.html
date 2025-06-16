@@ -2,121 +2,40 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <title>資格管理ツール</title>
-  <style>
-    body { font-family: sans-serif; max-width: 900px; margin: 20px auto; background:#f9f9f9; padding: 10px; }
-    h1 { text-align: center; }
-    .section { background: white; padding: 15px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);}
-    label { display: block; margin-top: 10px; }
-    input[type="text"] { width: 100%; padding: 8px; margin-top: 5px; }
-    button { margin-top: 10px; padding: 8px 15px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; }
-    button:hover { background: #2980b9; }
-    ul { list-style-type: none; padding-left: 0; }
-    li { background: #eee; margin: 5px 0; padding: 8px; border-radius: 4px; }
-    .sub-list { margin-left: 20px; }
-    select, option { padding: 6px; margin-top: 5px; width: 100%; }
-  </style>
+  <title>Firebase Firestore サンプル</title>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
 </head>
 <body>
+  <h1>Firestoreにデータを書き込む例</h1>
+  <button onclick="addQualification()">資格を追加</button>
 
-  <h1>資格管理ツール</h1>
+  <script>
+    // 1. Firebase初期化設定（あなたの設定に置き換えてください）
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "SENDER_ID",
+      appId: "APP_ID"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
 
-  <div class="section">
-    <h2>資格を追加</h2>
-    <label for="qualificationName">資格名：</label>
-    <input type="text" id="qualificationName" placeholder="例：ITパスポート" />
-    <button onclick="addQualification()">資格を追加</button>
-  </div>
-
-  <div class="section">
-    <h2>サブ項目を追加</h2>
-    <label for="qualificationSelect">資格を選択：</label>
-    <select id="qualificationSelect">
-      <option value="" disabled selected>資格を選んでください</option>
-    </select>
-    <label for="subItemName">サブ項目名：</label>
-    <input type="text" id="subItemName" placeholder="例：模擬試験" />
-    <button onclick="addSubItem()">サブ項目を追加</button>
-  </div>
-
-  <div class="section">
-    <h2>現在の資格一覧</h2>
-    <ul id="qualificationList">
-      <!-- 資格とサブ項目がここに表示される -->
-    </ul>
-  </div>
-
-<script>
-  const qualifications = {};
-
-  function addQualification() {
-    const nameInput = document.getElementById('qualificationName');
-    const name = nameInput.value.trim();
-    if (!name) {
-      alert('資格名を入力してください');
-      return;
+    // 2. Firestoreに資格を追加する関数
+    function addQualification() {
+      const qualificationName = prompt("追加する資格名を入力してください");
+      if (!qualificationName) return alert("資格名が必要です");
+      db.collection("qualifications").add({
+        name: qualificationName,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      }).then(() => {
+        alert("資格を追加しました！");
+      }).catch(error => {
+        alert("エラー: " + error.message);
+      });
     }
-    if (qualifications[name]) {
-      alert('すでに同じ資格名があります');
-      return;
-    }
-    qualifications[name] = [];
-    updateQualificationSelect();
-    updateQualificationList();
-    nameInput.value = '';
-  }
-
-  function addSubItem() {
-    const select = document.getElementById('qualificationSelect');
-    const subInput = document.getElementById('subItemName');
-    const selectedQualification = select.value;
-    const subName = subInput.value.trim();
-    if (!selectedQualification) {
-      alert('資格を選択してください');
-      return;
-    }
-    if (!subName) {
-      alert('サブ項目名を入力してください');
-      return;
-    }
-    qualifications[selectedQualification].push(subName);
-    updateQualificationList();
-    subInput.value = '';
-  }
-
-  function updateQualificationSelect() {
-    const select = document.getElementById('qualificationSelect');
-    select.innerHTML = '<option value="" disabled selected>資格を選んでください</option>';
-    Object.keys(qualifications).forEach(name => {
-      const option = document.createElement('option');
-      option.value = name;
-      option.textContent = name;
-      select.appendChild(option);
-    });
-  }
-
-  function updateQualificationList() {
-    const ul = document.getElementById('qualificationList');
-    ul.innerHTML = '';
-    Object.entries(qualifications).forEach(([qual, subs]) => {
-      const li = document.createElement('li');
-      li.textContent = qual;
-
-      if(subs.length > 0){
-        const subUl = document.createElement('ul');
-        subUl.classList.add('sub-list');
-        subs.forEach(sub => {
-          const subLi = document.createElement('li');
-          subLi.textContent = sub;
-          subUl.appendChild(subLi);
-        });
-        li.appendChild(subUl);
-      }
-
-      ul.appendChild(li);
-    });
-  }
-</script>
-
+  </script>
 </body>
 </html>
